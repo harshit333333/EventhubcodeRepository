@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-const BASE_URL      = 'https://eventhub.rahulshettyacademy.com';
-const USER_EMAIL    = 'rahulshetty1@gmail.com';
-const USER_PASSWORD = 'Magiclife1!';
+const BASE_URL      = process.env.TEST_BASE_URL || 'https://eventhub.rahulshettyacademy.com';
+const USER_EMAIL    = process.env.TEST_USER || 'rahulshetty1@gmail.com';
+const USER_PASSWORD = process.env.TEST_PASS || 'Magiclife1!';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
