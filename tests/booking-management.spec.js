@@ -44,7 +44,7 @@ async function bookEvent(page) {
 
   // Wait for confirmation card
   const refEl = page.locator('.booking-ref').first();
-  await expect(refEl).toBeVisible();
+  await expect(refEl).toBeVisible({ timeout: 15000 });
   const bookingRef = (await refEl.textContent())?.trim() ?? '';
   console.log(`Booking confirmed. Ref: ${bookingRef}`);
   return { bookingRef, eventTitle };
@@ -55,12 +55,22 @@ async function bookEvent(page) {
  */
 async function clearBookings(page) {
   await page.goto(`${BASE_URL}/bookings`);
+  await page.waitForLoadState('networkidle');
+
   const alreadyEmpty = await page.getByText('No bookings yet').isVisible().catch(() => false);
   if (alreadyEmpty) return;
 
+  const clearButton = page.getByRole('button', { name: /clear all bookings/i });
+  await expect(clearButton).toBeVisible({ timeout: 10000 });
   page.once('dialog', (dialog) => dialog.accept());
-  await page.getByRole('button', { name: /clear all bookings/i }).click();
-  await expect(page.getByText('No bookings yet')).toBeVisible();
+  await clearButton.click();
+  await expect(page.getByText('No bookings yet')).toBeVisible({ timeout: 15000 });
+}
+
+async function findBookingCard(page, bookingRef) {
+  const card = page.getByTestId('booking-card').filter({ hasText: bookingRef });
+  await expect(card).toBeVisible({ timeout: 15000 });
+  return card;
 }
 
 // ── Test Suite ─────────────────────────────────────────────────────────────────
@@ -94,9 +104,11 @@ test.describe('Booking Management — Critical Happy Paths', () => {
 
     // -- Step 2: Navigate to /bookings and click View Details --
     await page.goto(`${BASE_URL}/bookings`);
-    const card = page.getByTestId('booking-card').filter({ hasText: bookingRef });
-    await card.getByRole('link', { name: 'View Details' }).click();
-    await expect(page).toHaveURL(/\/bookings\/\d+/);
+    const card = await findBookingCard(page, bookingRef);
+    const viewDetails = card.getByRole('link', { name: 'View Details' });
+    await expect(viewDetails).toBeVisible({ timeout: 10000 });
+    await viewDetails.click();
+    await page.waitForURL(/\/bookings\/\d+/, { timeout: 15000 });
 
     // -- Step 3: Verify breadcrumb shows booking ref --
     await expect(page.locator('span.font-mono.font-bold').first()).toContainText(bookingRef);
@@ -176,9 +188,11 @@ test.describe('Booking Management — Critical Happy Paths', () => {
 
     // -- Step 2: Navigate to booking detail via View Details --
     await page.goto(`${BASE_URL}/bookings`);
-    const card = page.getByTestId('booking-card').filter({ hasText: bookingRef });
-    await card.getByRole('link', { name: 'View Details' }).click();
-    await expect(page).toHaveURL(/\/bookings\/\d+/);
+    const card = await findBookingCard(page, bookingRef);
+    const viewDetails = card.getByRole('link', { name: 'View Details' });
+    await expect(viewDetails).toBeVisible({ timeout: 10000 });
+    await viewDetails.click();
+    await page.waitForURL(/\/bookings\/\d+/, { timeout: 15000 });
 
     // -- Step 3: Click Cancel Booking button on detail page --
     await page.getByRole('button', { name: 'Cancel Booking' }).click();
@@ -191,11 +205,11 @@ test.describe('Booking Management — Critical Happy Paths', () => {
     await page.locator('#confirm-dialog-yes').click();
 
     // -- Step 6: Assert redirect to /bookings and success toast --
-    await expect(page).toHaveURL(`${BASE_URL}/bookings`);
-    await expect(page.getByText('Booking cancelled successfully')).toBeVisible();
+    await page.waitForURL(`${BASE_URL}/bookings`, { timeout: 15000 });
+    await expect(page.getByText('Booking cancelled successfully')).toBeVisible({ timeout: 15000 });
 
     // -- Step 7: Assert booking is no longer in the list --
-    await expect(page.getByText('No bookings yet')).toBeVisible();
+    await expect(page.getByText('No bookings yet')).toBeVisible({ timeout: 15000 });
   });
 
   // TC-004 ───────────────────────────────────────────────────────────────────

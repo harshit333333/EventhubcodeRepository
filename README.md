@@ -107,6 +107,44 @@ npm run dev
 
 ---
 
+## Dockerized Playwright Tests
+
+This repository includes a `Dockerfile` that installs Node, Playwright, and browsers inside a container. That means you can run the entire Playwright suite without installing Node or browser dependencies on your host machine.
+
+From the repo root:
+
+```bash
+docker compose run --rm playwright
+```
+
+This runs the full test suite in the default Playwright configuration.
+
+For debugging or to avoid cross-test state interference, use the single-browser service:
+
+```bash
+docker compose run --rm tests
+```
+
+This runs the suite with a single worker and only Chromium.
+
+For interactive debugging with `PWDEBUG` enabled:
+
+```bash
+docker compose run --rm debug
+```
+
+To override the default test environment variables:
+
+```bash
+docker compose run --rm \
+  -e TEST_BASE_URL=https://eventhub.rahulshettyacademy.com \
+  -e TEST_USER=rahulshetty1@gmail.com \
+  -e TEST_PASS='Magiclife1!' \
+  tests
+```
+
+---
+
 ## API Endpoints
 
 Base URL: `http://localhost:3001`

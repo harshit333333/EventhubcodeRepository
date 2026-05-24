@@ -1,0 +1,33 @@
+services:
+  playwright:
+    build: .
+    command: npm test
+    environment:
+      TEST_BASE_URL: ${TEST_BASE_URL:-https://eventhub.rahulshettyacademy.com}
+      TEST_USER: ${TEST_USER:-rahulshetty1@gmail.com}
+      TEST_PASS: ${TEST_PASS:-Magiclife1!}
+    ports:
+      - "9323:9323"
+    # No volume mount is needed because code is baked into the image.
+    # This keeps the container isolated and avoids host dependency requirements.
+
+  tests:
+    build: .
+    command: npx playwright test --workers=1 --project=chromium
+    environment:
+      TEST_BASE_URL: ${TEST_BASE_URL:-https://eventhub.rahulshettyacademy.com}
+      TEST_USER: ${TEST_USER:-rahulshetty1@gmail.com}
+      TEST_PASS: ${TEST_PASS:-Magiclife1!}
+    ports:
+      - "9323:9323"
+
+  debug:
+    build: .
+    command: npx playwright test --workers=1 --project=chromium
+    environment:
+      PWDEBUG: "1"
+      TEST_BASE_URL: ${TEST_BASE_URL:-https://eventhub.rahulshettyacademy.com}
+      TEST_USER: ${TEST_USER:-rahulshetty1@gmail.com}
+      TEST_PASS: ${TEST_PASS:-Magiclife1!}
+    ports:
+      - "9323:9323"

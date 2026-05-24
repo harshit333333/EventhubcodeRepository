@@ -1,0 +1,16 @@
+node_modules
+**/node_modules
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.DS_Store
+.git
+.gitignore
+.playwright
+playwright-report
+test-results
+frontend/.next
+frontend/out
+frontend/.vercel
+backend/node_modules
+frontend/node_modules
